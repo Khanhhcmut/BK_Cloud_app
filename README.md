@@ -27,7 +27,7 @@ Lưu ý: Việc gán ram qua ít cho máy ảo có thể gây ra lỗi cài đ�
 
 Sau khi cài đặt Terminal sẽ hiện địa chỉ IP của trang Dashboard Horizon Openstack
 
-![manual9.png](E:\Commit\src Windows\photos\manual9.png)
+![manual9.png](src%20Windows/photos/manual9.png)
 
 Địa chỉ trong hình là 192.168.1.110 
 
@@ -35,7 +35,7 @@ Tài khoản và mật khẩu đăng nhập mặc định là: admin/admin.
 
 Trong phần app đã có phần thay đổi địa chỉ này tùy vào cài đặt của từng người dùng khác nhau.
 
-![manual1.png](E:\Commit\src Windows\photos\manual1.png)
+![manual1.png](src%20Windows/photos/manual1.png)
 
 Người dùng bấm vào “Help” để tiến hành thay đổi.
 # Install
@@ -77,4 +77,4 @@ Bước 3: Người dùng có thể bắt đầu dùng app bằng cách sử d�
 
 # BK Cloud Diagram
 
-![diagram.jpg](E:\Commit\src Windows\photos\diagram.png)
+![diagram.png](src%20Windows/photos/diagram.png)

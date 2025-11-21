@@ -27,7 +27,7 @@ Lưu ý: Việc gán ram qua ít cho máy ảo có thể gây ra lỗi cài đ�
 
 Sau khi cài đặt Terminal sẽ hiện địa chỉ IP của trang Dashboard Horizon Openstack
 
-![manual9.png](src%20Windows/photos/manual9.png)
+![manual9.png](src/photos/manual9.png)
 
 Địa chỉ trong hình là 192.168.1.110 
 
@@ -35,7 +35,7 @@ Tài khoản và mật khẩu đăng nhập mặc định là: admin/admin.
 
 Trong phần app đã có phần thay đổi địa chỉ này tùy vào cài đặt của từng người dùng khác nhau.
 
-![manual1.png](src%20Windows/photos/manual1.png)
+![manual1.png](src/photos/manual1.png)
 
 Người dùng bấm vào “Help” để tiến hành thay đổi.
 # Install
@@ -44,37 +44,14 @@ Người dùng bấm vào “Help” để tiến hành thay đổi.
 
 * `pyinstaller --onefile --noconsole --add-data "photos;photos" --add-binary "tools/rclone.exe;tools" --name BKcloud --icon=photos/logo.ico login.py`
 
----- Hướng dẫn cài đặt app BK Cloud cho Windows----
+---- Hướng dẫn cài đặt app BK Cloud cho Windows/Linux/macOS----
 
-Bước 1: Tải phiên bản "Windows" trong phần Release.
+Bước 1: Tải phiên bản phù hợp trong phần Release.
 
-Bước 2: Giải nén thư mục, thực hiện chạy cài đặt phần mềm bổ trợ (nếu người dùng chưa cài) "winfsp-2.0.23075.msi". Bấm next cho đến khi hoàn tất.
-
-Bước 3: Người dùng có thể bắt đầu dùng app bằng cách sử dụng "BKcloud.exe" (Lưu ý thay đổi đường dẫn URL Swift trong phần Help để tránh lỗi).
-
----- Hướng dẫn cài đặt app BK Cloud cho Linux Ubuntu----
-
-Bước 1: Tải phiên bản "Linux" trong phần Release.
-
-Bước 2: Hệ thống Linux Ubuntu người dùng cần có Fuse, Rclone và thư viện bổ trợ cho Qt5. Chạy các code bên dưới.
-
-* Fuse:
-
-`sudo apt update`
-
-`sudo apt install fuse3`
-* Rclone(file trong phần Release): 
-
-`sudo apt install ./rclone-v1.71.1-linux-amd64.deb`
-* Thư viện Qt5:
-
-`sudo apt update` 
-
-`sudo apt install python3-pyqt5 python3-pyqt5.qtwebengine \libxcb-xinerama0 libxkbcommon-x11-0 \libglu1-mesa`
+Bước 2: Giải nén thư mục.
 
 Bước 3: Người dùng có thể bắt đầu dùng app bằng cách sử dụng "BKcloud.exe" (Lưu ý thay đổi đường dẫn URL Swift trong phần Help để tránh lỗi).
-
 
 # BK Cloud Diagram
 
-![diagram.png](src%20Windows/photos/diagram.png)
+![bkcloud.png](src/photos/bkcloud.png)

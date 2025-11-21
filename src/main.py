@@ -2708,8 +2708,7 @@ class MainWindow(QWidget):
                 self.progress_bar.setValue(percent)
 
                 if self.completed_tasks == self.total_tasks:
-                    QMessageBox.information(self, "Download Completed",
-                                            f"Folder '{folder_name}' downloaded successfully.")
+                    QMessageBox.information(self, "Download Completed", f"Folder '{folder_name}' downloaded successfully.")
                     self.progress_bar.setValue(0)
 
             def on_download_error(msg):

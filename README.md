@@ -46,7 +46,7 @@ Người dùng bấm vào “Help” để tiến hành thay đổi.
 
 ---- Hướng dẫn cài đặt app BK Cloud cho Windows/Linux/macOS----
 
-Bước 1: Tải phiên bản phù hợp trong phần Release.
+Bước 1: Tải phiên bản phù hợp với hệ điều hành
 
 Bước 2: Giải nén thư mục.
 

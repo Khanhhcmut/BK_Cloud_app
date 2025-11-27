@@ -439,11 +439,14 @@ class MainWindow(QWidget):
         self.logging_out = False
         self.token = token
         self.storage_url = storage_url
+        self.logged_in_username = None
+        self.download_remote_config()
+        self.total_quota_bytes = 0.1 * 1024 ** 3
 
         self.viewer_window = None
 
-        self.total_quota_bytes = self.load_quota()
         self.used_bytes = 0
+        self.total_used_bytes = 0
         self.container_sort_state = {"column": 0, "ascending": True}
         self.object_sort_state = {"column": 0, "ascending": True}
         self.object_sort_order = {}
@@ -1127,7 +1130,7 @@ class MainWindow(QWidget):
                     try:
                         import json
 
-                        username = self.get_current_username()
+                        username = self.logged_in_username
 
                         cfg = {}
 
@@ -1140,6 +1143,9 @@ class MainWindow(QWidget):
 
                         secure_json_dump(cfg, "config.json")
                         self.upload_remote_config()
+
+                        self.total_quota_bytes = self.load_quota()
+                        self.update_usage_display()
 
                         QMessageBox.information(
                             self, "Success",
@@ -1395,12 +1401,16 @@ class MainWindow(QWidget):
         for user in self.saved_users:
             self.saved_user_dropdown.addItem(user["user_display"])
 
-        self.saved_user_dropdown.setCurrentIndex(0)
-        self.current_user_index = 0  # ✅ Ghi nhớ user đang chọn
+        if self.saved_user_dropdown.count() > 0:
+            self.current_user_index = self.saved_user_dropdown.currentIndex()
+        else:
+            self.current_user_index = -1
+
         self.saved_user_dropdown.blockSignals(False)
 
         self.update_backup_status_label()
         self.schedule_backup_from_config()
+
     # Chuyển đổi user đã lưu
     def switch_saved_user(self, index):
         if index < 0 or index >= len(self.saved_users):
@@ -1408,7 +1418,6 @@ class MainWindow(QWidget):
 
         user = self.saved_users[index]
 
-        # 🔐 Xác nhận mật khẩu
         password_input, ok = QInputDialog.getText(
             self,
             "Confirm Password",
@@ -1417,7 +1426,6 @@ class MainWindow(QWidget):
         )
 
         if not ok:
-            # Người dùng cancel → rollback dropdown
             self.saved_user_dropdown.blockSignals(True)
             self.saved_user_dropdown.setCurrentIndex(self.current_user_index)
             self.saved_user_dropdown.blockSignals(False)
@@ -1430,24 +1438,23 @@ class MainWindow(QWidget):
             self.saved_user_dropdown.blockSignals(False)
             return
 
-        # ✅ Nếu đúng, tiếp tục chuyển user
         try:
-            # Re-authenticate để lấy token & storage_url
             token, storage_url = self.re_authenticate_user(user)
             self.token = token
             self.storage_url = storage_url
+            self.logged_in_username = user["username"]
 
-            # Reset context UI
+            self.download_remote_config()
+
+            self.total_quota_bytes = self.load_quota()
+
             self.selected_container = None
             self.list_containers()
             self.calculate_total_used_bytes()
-
-            self.total_quota_bytes = self.load_quota()
             self.update_usage_display()
 
-            # Cập nhật index người dùng hiện tại
-            self.current_user_index = 0
             self.load_saved_users(select_user_display=user["user_display"])
+            self.current_user_index = 0
 
             QMessageBox.information(
                 self,
@@ -1461,7 +1468,6 @@ class MainWindow(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Cannot switch: {str(e)}")
 
-            # Rollback dropdown nếu lỗi
             self.saved_user_dropdown.blockSignals(True)
             self.saved_user_dropdown.setCurrentIndex(self.current_user_index)
             self.saved_user_dropdown.blockSignals(False)
@@ -1669,20 +1675,23 @@ class MainWindow(QWidget):
         #Xử lý chung
     def load_quota(self):
         try:
-            import json
-            username = self.get_current_username()
+            username = self.logged_in_username
             if os.path.exists("config.json"):
                 cfg = secure_json_load("config.json")
                 users = cfg.get("users", {})
                 if username in users:
                     return float(users[username].get("quota_gb", 0.1)) * 1024 ** 3
-        except:
-            pass
+        except Exception as e:
+            print("Load quota error:", e)
+
         return 0.1 * 1024 ** 3
 
     def update_usage_display(self):
-        percent = int(self.used_bytes / self.total_quota_bytes * 100)
-        self.usage_bar.setValue(percent)
+        if self.total_quota_bytes <= 0:
+            percent = 0
+        else:
+            percent = (self.total_used_bytes / self.total_quota_bytes) * 100
+        self.usage_bar.setValue(int(percent))
 
         # Cảnh báo màu khi trên 90%
         if percent >= 90:
@@ -1884,6 +1893,10 @@ class MainWindow(QWidget):
         matched_containers = []
 
         for container in self.get_all_containers():
+
+            if container.lower() == "config":
+                continue
+
             try:
                 url = f"{self.storage_url}/{container}?format=json"
                 response = requests.get(url, headers=headers)
@@ -2112,6 +2125,9 @@ class MainWindow(QWidget):
                         continue
 
                     self.containers.append(container)
+
+                    if container.lower() == "config":
+                        continue
 
                     try:
                         container_url = f"{self.storage_url}/{container}"

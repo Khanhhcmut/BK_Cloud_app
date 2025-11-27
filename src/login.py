@@ -311,6 +311,7 @@ class LoginWindow(QWidget):
                 }
 
                 self.main_window = MainWindow(token, storage_url, login_window=self)
+                self.main_window.logged_in_username = username
                 self.main_window.ensure_config_container()
                 self.main_window.download_remote_config()
                 self.main_window.current_user = user

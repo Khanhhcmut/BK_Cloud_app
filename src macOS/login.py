@@ -1,14 +1,14 @@
 import os, json, requests
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-    QMessageBox, QFrame, QSizePolicy, QApplication, QFileDialog, QDialog,
+    QMessageBox, QFrame, QSizePolicy, QApplication, QFileDialog, QDialog, QInputDialog,
     QTextEdit, QDialogButtonBox, QRadioButton
 )
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QBrush, QIcon
 from PyQt5.QtCore import Qt, QEvent
 
 from main import MainWindow
-from utils import resource_path, user_json_path
+from utils import resource_path, user_json_path, load_app_config
 from secure_json import secure_json_load, secure_json_dump
 import manual
 
@@ -310,7 +310,10 @@ class LoginWindow(QWidget):
                     "user_id": user_id
                 }
 
-                self.main_window = MainWindow(token, storage_url, login_window=self)
+                cfg = load_app_config()
+                dicom_enabled = cfg.get("enable_dicom_bridge", True)
+
+                self.main_window = MainWindow(token, storage_url, login_window=self, dicom_enabled=dicom_enabled)
                 self.main_window.logged_in_username = username
                 self.main_window.ensure_config_container()
                 self.main_window.download_remote_config()
@@ -371,9 +374,11 @@ class LoginWindow(QWidget):
         manual_radio = QRadioButton("User manual")
         manual_radio.setChecked(True)  # mặc định chọn
         change_url_radio = QRadioButton("Change Swift Auth URL")
+        toggle_dicom_radio = QRadioButton("Enable / Disable DICOM Bridge")
 
         layout.addWidget(manual_radio)
         layout.addWidget(change_url_radio)
+        layout.addWidget(toggle_dicom_radio)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         layout.addWidget(button_box)
@@ -406,20 +411,35 @@ class LoginWindow(QWidget):
                 close_btn.accepted.connect(self.manual_dialog.close)
                 manual_layout.addWidget(close_btn)
 
-                def handle_change(event):
-                    if event.type() == QEvent.WindowStateChange:
-                        if self.manual_dialog.windowState() & Qt.WindowMaximized:
-                            self.manual_dialog.showFullScreen()
-                    return QDialog.changeEvent(self.manual_dialog, event)
-
-                self.manual_dialog.changeEvent = handle_change
-
                 self.manual_dialog.show()
-                self.manual_dialog.raise_()
-                self.manual_dialog.activateWindow()
 
             elif change_url_radio.isChecked():
                 self.show_change_url_dialog()
+
+            elif toggle_dicom_radio.isChecked():
+                cfg = load_app_config()
+                current = cfg.get("enable_dicom_bridge", True)
+
+                new_state, ok = QInputDialog.getItem(
+                    self,
+                    "DICOM Bridge",
+                    "Select mode:",
+                    ["Enable", "Disable"],
+                    0 if current else 1,
+                    False
+                )
+
+                if ok:
+                    cfg["enable_dicom_bridge"] = (new_state == "Enable")
+                    path = user_json_path("app_config.json")
+                    with open(path, "w", encoding="utf-8") as f:
+                        json.dump(cfg, f, indent=2)
+
+                    QMessageBox.information(
+                        self,
+                        "Saved",
+                        "DICOM Bridge setting saved."
+                    )
 
             dialog.accept()
 

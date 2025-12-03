@@ -432,9 +432,10 @@ def format_datetime(date_str):
 
 class MainWindow(QWidget):
     #Phần UI của app
-    def __init__(self, token=None, storage_url=None, login_window=None):
+    def __init__(self, token=None, storage_url=None, login_window=None, dicom_enabled=True):
         super().__init__()
 
+        self.dicom_enabled = dicom_enabled
         self.login_window = login_window
         self.logging_out = False
         self.token = token
@@ -543,6 +544,9 @@ class MainWindow(QWidget):
         btn_myfile = QPushButton("📁 My File")
         btn_backup = QPushButton("🛡️ Backup")
         btn_dicom = QPushButton("📰 DICOM Bridge")
+
+        if not self.dicom_enabled:
+            btn_dicom.setVisible(False)
 
         for btn in [btn_dashboard, btn_myfile, btn_backup, btn_dicom]:
             btn.setStyleSheet("""
@@ -909,82 +913,86 @@ class MainWindow(QWidget):
         backup_layout.addWidget(self.backup_info_label)
         backup_layout.addStretch()
 
-        dicom_page, dicom_layout = create_page_container()
-        self.stack.addWidget(dicom_page)
-        # Tiêu đề
-        title_dicom = QLabel("📰 DICOM Bridge (Orthanc → Swift)")
-        title_dicom.setStyleSheet("font-size: 24px; font-weight: bold;")
-        dicom_layout.addWidget(title_dicom)
-        dicom_layout.addSpacing(15)
-        # === Nút chức năng giống My File ===
-        self.dicom_refresh_btn = QPushButton("🔄 Refresh Study List")
-        self.dicom_upload_btn = QPushButton("⬆️ Upload Selected Study")
-        self.dicom_load_more_btn = QPushButton("➕ Load More")
+        # === DICOM Bridge tab (optional) ===
+        if self.dicom_enabled:
+            dicom_page, dicom_layout = create_page_container()
+            self.stack.addWidget(dicom_page)
 
-        self.dicom_buttons_widget = QFrame()
-        dicom_buttons_layout = QVBoxLayout(self.dicom_buttons_widget)
-        dicom_buttons_layout.setSpacing(10)
-        dicom_buttons_layout.setContentsMargins(0, 5, 0, 0)
+            title_dicom = QLabel("📰 DICOM Bridge")
+            title_dicom.setStyleSheet("font-size: 24px; font-weight: bold;")
+            dicom_layout.addWidget(title_dicom)
+            dicom_layout.addSpacing(15)
 
-        # Hàng: Refresh + Load More
-        refresh_load_row = QHBoxLayout()
-        refresh_load_row.addSpacing(35)
-        self.dicom_refresh_btn.setStyleSheet(btn_style)
-        self.dicom_load_more_btn.setStyleSheet(btn_style)
-        refresh_load_row.addWidget(self.dicom_refresh_btn)
-        refresh_load_row.addSpacing(10)
-        refresh_load_row.addWidget(self.dicom_load_more_btn)
-        dicom_buttons_layout.addLayout(refresh_load_row)
+            self.dicom_refresh_btn = QPushButton("🔄 Refresh Study List")
+            self.dicom_upload_btn = QPushButton("⬆️ Upload Selected Study")
+            self.dicom_load_more_btn = QPushButton("➕ Load More")
 
-        # Hàng: Upload
-        upload_row = QHBoxLayout()
-        upload_row.addSpacing(35)
-        self.dicom_upload_btn.setStyleSheet(btn_style)
-        upload_row.addWidget(self.dicom_upload_btn)
-        dicom_buttons_layout.addLayout(upload_row)
+            self.dicom_buttons_widget = QFrame()
+            dicom_buttons_layout = QVBoxLayout(self.dicom_buttons_widget)
+            dicom_buttons_layout.setSpacing(10)
+            dicom_buttons_layout.setContentsMargins(0, 5, 0, 0)
 
-        dicom_layout.addWidget(self.dicom_buttons_widget)
-        dicom_layout.addSpacing(20)
+            refresh_load_row = QHBoxLayout()
+            refresh_load_row.addSpacing(35)
+            self.dicom_refresh_btn.setStyleSheet(btn_style)
+            self.dicom_load_more_btn.setStyleSheet(btn_style)
+            refresh_load_row.addWidget(self.dicom_refresh_btn)
+            refresh_load_row.addSpacing(10)
+            refresh_load_row.addWidget(self.dicom_load_more_btn)
+            dicom_buttons_layout.addLayout(refresh_load_row)
 
-        self.study_list = QTableWidget()
-        self.study_list.setColumnCount(5)
-        self.study_list.setHorizontalHeaderLabels([
-            "Patient ID", "Patient Name", "Study Description", "Study Date", "Study ID (Hidden)"
-        ])
-        self.study_list.setColumnHidden(4, True)  # 👈 Ẩn cột chứa Study ID
-        self.study_list.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.study_list.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.study_list.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.study_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.study_list.setStyleSheet("""
-            QTableWidget {
-                background-color: white;
-                border: 1px solid #ccc;
-                gridline-color: #aaa;
-            }
-            QHeaderView::section {
-                background-color: #eee;
-                font-weight: bold;
-                padding: 4px;
-                border: 1px solid #bbb;
-            }
-            QTableWidget::item {
-                padding: 4px;
-            }
-        """)
-        dicom_layout.addWidget(self.study_list)
+            upload_row = QHBoxLayout()
+            upload_row.addSpacing(35)
+            self.dicom_upload_btn.setStyleSheet(btn_style)
+            upload_row.addWidget(self.dicom_upload_btn)
+            dicom_buttons_layout.addLayout(upload_row)
 
-        #new TAB
+            dicom_layout.addWidget(self.dicom_buttons_widget)
+            dicom_layout.addSpacing(20)
 
-        self.dicom_progress_bar = QProgressBar()
-        self.dicom_progress_bar.setValue(0)
-        self.dicom_progress_bar.setVisible(False)  # Ẩn mặc định
-        dicom_layout.addWidget(self.dicom_progress_bar)
+            self.study_list = QTableWidget()
+            self.study_list.setColumnCount(5)
+            self.study_list.setHorizontalHeaderLabels([
+                "Patient ID", "Patient Name", "Study Description", "Study Date", "Study ID (Hidden)"
+            ])
+            self.study_list.setColumnHidden(4, True)
+            self.study_list.setSelectionBehavior(QAbstractItemView.SelectRows)
+            self.study_list.setSelectionMode(QAbstractItemView.SingleSelection)
+            self.study_list.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.study_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
+            self.study_list.setStyleSheet("""
+                        QTableWidget {
+                            background-color: white;
+                            border: 1px solid #ccc;
+                            gridline-color: #aaa;
+                        }
+                        QHeaderView::section {
+                            background-color: #eee;
+                            font-weight: bold;
+                            padding: 4px;
+                            border: 1px solid #bbb;
+                        }
+                        QTableWidget::item {
+                            padding: 4px;
+                        }
+                    """)
+
+            dicom_layout.addWidget(self.study_list)
+
+            self.dicom_progress_bar = QProgressBar()
+            self.dicom_progress_bar.setValue(0)
+            self.dicom_progress_bar.setVisible(False)
+            dicom_layout.addWidget(self.dicom_progress_bar)
+
+            btn_dicom.clicked.connect(lambda: self.switch_tab(3))
+
+        else:
+            btn_dicom.setToolTip("DICOM Bridge is disabled by admin")
+
 
         btn_dashboard.clicked.connect(lambda: self.switch_tab(0))
         btn_myfile.clicked.connect(lambda: (self.switch_tab(1),self.list_containers()))
         btn_backup.clicked.connect(lambda: (self.switch_tab(2), self.update_backup_status_label()))
-        btn_dicom.clicked.connect(lambda: self.switch_tab(3))
 
         self.calculate_total_used_bytes()
         self.list_containers()
@@ -1005,13 +1013,16 @@ class MainWindow(QWidget):
         self.btn_clear_setting.clicked.connect(self.clear_backup_setting)
         self.btn_backup_now.clicked.connect(self.backup_now)
 
-        self.dicom_refresh_btn.clicked.connect(self.load_studies_from_orthanc)
-        self.dicom_upload_btn.clicked.connect(self.upload_selected_study_to_swift)
-        self.dicom_load_more_btn.clicked.connect(self.load_more_studies)
+        if self.dicom_enabled:
+            self.dicom_refresh_btn.clicked.connect(self.load_studies_from_orthanc)
+            self.dicom_upload_btn.clicked.connect(self.upload_selected_study_to_swift)
+            self.dicom_load_more_btn.clicked.connect(self.load_more_studies)
 
-        self.study_list.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.study_list.customContextMenuRequested.connect(self.show_study_context_menu)
-        self.load_studies_from_orthanc()
+            self.study_list.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.study_list.customContextMenuRequested.connect(self.show_study_context_menu)
+
+            self.load_studies_from_orthanc()
+
     #Xử lý chung
     # Scale hình nền khi thu phóng cửa sổ
     def update_background(self):
@@ -1090,10 +1101,16 @@ class MainWindow(QWidget):
                     return QDialog.changeEvent(self.manual_dialog, event)
 
                 self.manual_dialog.changeEvent = handle_change
-
                 self.manual_dialog.show()
 
             elif change_dicom_radio.isChecked():
+                if not self.dicom_enabled:
+                    QMessageBox.warning(
+                        self,
+                        "DICOM Disabled",
+                        "DICOM Bridge is currently disabled.\nYou cannot change the DICOM URL."
+                    )
+                    return
                 current_url = self.get_dicom_url()
                 new_url, ok = QInputDialog.getText(
                     self, "Change DICOMweb URL", "Enter new DICOMweb URL:",
@@ -1105,7 +1122,6 @@ class MainWindow(QWidget):
 
             elif change_password_radio.isChecked():
                 self.show_change_password_dialog()
-
 
             elif change_quota_radio.isChecked():
                 admin_pass, ok = QInputDialog.getText(
@@ -1690,14 +1706,25 @@ class MainWindow(QWidget):
         if self.total_quota_bytes <= 0:
             percent = 0
         else:
-            percent = (self.total_used_bytes / self.total_quota_bytes) * 100
+            percent = (self.used_bytes / self.total_quota_bytes) * 100
         self.usage_bar.setValue(int(percent))
 
         # Cảnh báo màu khi trên 90%
         if percent >= 90:
-            self.usage_bar.setStyleSheet("QProgressBar::chunk { background-color: red; }")
+            color = "#f44336"
         else:
-            self.usage_bar.setStyleSheet("")
+            color = "#4caf50"
+
+        self.usage_bar.setStyleSheet(f"""
+        QProgressBar {{
+            border: 1px solid #aaa;
+            background-color: #eeeeee;
+        }}
+
+        QProgressBar::chunk {{
+            background-color: {color};
+        }}
+        """)
 
         # Format hiển thị text
         used_str = self.format_size(self.used_bytes)
@@ -3298,6 +3325,10 @@ class MainWindow(QWidget):
 #Tab DICOM Bridge
     # Thay đổi đường dẫn của web orthanc khi cần thiết
     def get_dicom_url(self):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         try:
             with open("dicomurl.json", "r") as f:
                 return json.load(f).get("url", "http://localhost:8042")
@@ -3305,6 +3336,9 @@ class MainWindow(QWidget):
             return "http://localhost:8042"
 
     def set_dicom_url(self, new_url):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
         try:
             with open("dicomurl.json", "w") as f:
                 json.dump({"url": new_url}, f, indent=2)
@@ -3313,6 +3347,10 @@ class MainWindow(QWidget):
 
     # Hiển thị thông tin metadata của file
     def show_study_context_menu(self, pos):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         index = self.study_list.indexAt(pos)
         if not index.isValid():
             return
@@ -3324,6 +3362,10 @@ class MainWindow(QWidget):
         menu.exec_(self.study_list.viewport().mapToGlobal(pos))
 
     def show_study_metadata(self):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         row = self.study_list.currentRow()
         if row < 0:
             return
@@ -3395,6 +3437,10 @@ class MainWindow(QWidget):
 
     # Hiển thị những file đang có bên web về app
     def load_studies_from_orthanc(self):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         self.study_list.setRowCount(0)
         self.study_ids = []
         self.loaded_offset = 0
@@ -3414,6 +3460,10 @@ class MainWindow(QWidget):
             )
 
     def populate_study_list(self, study_data):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         self.study_list.setRowCount(0)
         for patient_id, patient_name, study_desc, study_date, study_id in study_data:
             row = self.study_list.rowCount()
@@ -3425,6 +3475,10 @@ class MainWindow(QWidget):
             self.study_list.setItem(row, 4, QTableWidgetItem(study_id))  # 👈 Cột ẩn
     # Upload file đang chọn lên app cloud
     def upload_selected_study_to_swift(self):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         self.dicom_progress_bar.setVisible(True)
         self.dicom_progress_bar.setValue(0)
         QApplication.processEvents()
@@ -3478,6 +3532,10 @@ class MainWindow(QWidget):
             QMessageBox.critical(self, "Error", f"Upload failed:\n{str(e)}")
 
     def start_upload_dicom(self, filepaths, folder_name, temp_dir):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         container = "DICOM"
         container_url = f"{self.storage_url}/{container}"
         headers = {"X-Auth-Token": self.token}
@@ -3524,6 +3582,10 @@ class MainWindow(QWidget):
             self.threadpool.start(worker)
 
     def load_more_studies(self):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         if self.loaded_offset >= len(self.study_ids):
             QMessageBox.information(self, "Done", "No more studies to load")
             return
@@ -3540,6 +3602,10 @@ class MainWindow(QWidget):
         self.loaded_offset += 10
 
     def append_studies_to_table(self, study_data_list):
+        if not self.dicom_enabled:
+            QMessageBox.warning(self, "Disabled", "DICOM Bridge is disabled by admin.")
+            return
+
         for data in study_data_list:
             row = self.study_list.rowCount()
             self.study_list.insertRow(row)

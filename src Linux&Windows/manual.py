@@ -17,10 +17,10 @@ HELP_TEXT = """
 
 <ul style="list-style-type: none; padding-left: 20px; line-height: 1.5;">
     <li>-Người dùng cần nhập đầy đủ Username, Password và Project name để đăng nhập vào app, nếu không sẽ báo lỗi.</li>
-    <li>-Trong phần Help bao gồm 2 phần: Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
-    <li>+ Change Swift Auth URL:Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
+    <li>-Trong phần Help bao gồm 4 phần: Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
     <li>+ User manual: hướng dẫn người dùng sử dụng app.</li>
-
+    <li>+ Change Swift Auth URL:Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
+    <li>+ Enable/Disable DICOM Bridge: Dùng để tắt chức năng DICOM Bridge trong trường hợp người dùng không muốn sử dụng.</li>
 </ul>
 
 <h2>2. Giao diện chính của app</h2>
@@ -101,7 +101,7 @@ HELP_TEXT = """
 
 <h2>7. Help (Trợ giúp)</h2>
 <div style="text-align: center;">
-    <img src="file:photos/manual8.png" width="1000" />
+    <img src="file:photos/manual7.png" width="1000" />
 </div>
 
 <ul style="list-style-type: none; padding-left: 20px; line-height: 1.5;">
@@ -109,19 +109,8 @@ HELP_TEXT = """
     <li>+ User manual: Phần hướng dẫn người dùng. </li>
     <li>+ Change DICOMweb URL: Thay đổi đường dẫn đển trang Dicomweb Orthanc tùy vào setup của người dùng </li>
     <li>+ Change User password: Dùng để thay đổi password của User hiện tại (Lưu ý: không thể đổi trùng mật khẩu với mật khẩu cũ gần nhất.)</li>
-    <li>+ Change cloud storage limit: Dùng để thay đổi limit của cloud, mặc định là 1GB </li>
+    <li>+ Change cloud storage limit: Dùng để thay đổi limit của cloud, tuy nhiên cần có mật khẩu Admin để thực hiện. </li>
 
-</ul>
-
-<h2>8. Window file explorer</h2>
-<div style="text-align: center;">
-    <img src="file:photos/manual7.png" width="1000" />
-</div>
-
-<ul style="list-style-type: none; padding-left: 20px; line-height: 1.5;">
-    <li>-Khi người dùng đăng nhập vào app thành công thì trên hệ thống sẽ xuất hiện một ổ đĩa Z: có dạng:</li>
-    <li>BK Cloud - "User"</li>
-    <li>-Trong đó "User" là User hiện tại của người dùng, khi người dùng thực hiện chuyển đổi User thì app cũng sẽ tự động chuyển user trên ổ đĩa Z:</li>
 </ul>
 """
 def get_help_text():

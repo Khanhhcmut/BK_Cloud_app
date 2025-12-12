@@ -3117,7 +3117,6 @@ class MainWindow(QWidget):
             self.do_backup(is_now=True)
     # Thực hiện backup đúng lịch hẹn đã lên trước đó.
     def perform_scheduled_backup(self):
-        QMessageBox.information(self, "Backup", "Performing automatic backup")
         self.do_backup(is_now=False)
 
         # Nếu mode là "once" → xoá file

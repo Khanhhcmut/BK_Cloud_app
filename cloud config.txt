@@ -1,0 +1,10 @@
+sudo nano /etc/apache2/sites-enabled/horizon.conf
+
+<Location /dashboard>
+ Require all denied 
+</Location>
+
+sudo systemctl reload apache2
+
+
+add this code to disable access to Horizon dashboard

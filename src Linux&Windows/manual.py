@@ -20,7 +20,7 @@ HELP_TEXT = """
     <li>-Trong phần Help bao gồm 4 phần: Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
     <li>+ User manual: hướng dẫn người dùng sử dụng app.</li>
     <li>+ Change Swift Auth URL:Dùng để thay đổi đường dẫn đến sever Object storage Openstack Swift tùy vào setup của người dùng.</li>
-    <li>+ Enable/Disable DICOM Bridge: Dùng để tắt chức năng DICOM Bridge trong trường hợp người dùng không muốn sử dụng.</li>
+    <li>+ Enable/Disable DICOM Bridge: Dùng để tắt chức năng DICOM Bridge trong trường hợp người dùng không muốn sử dụng (mặc định là disable).</li>
 </ul>
 
 <h2>2. Giao diện chính của app</h2>
@@ -31,7 +31,7 @@ HELP_TEXT = """
 
 <ul style="list-style-type: none; padding-left: 20px; line-height: 1.5;">
     <li>-App gồm hai phần chính:</li>
-    <li>+ Phần bên trái chứa: Tên app, các nút Help, Logout, phần chuyển đổi User, 4 tab chức năng chính.</li>
+    <li>+ Phần bên trái chứa: Tên app, các nút Help, Logout, phần chuyển đổi User, 3 tab chức năng chính, 1 tab phụ là DICOM Bridge.</li>
     <li>+ Phần bên phải dùng để thể hiện nội dung của từng tab chức năng khi người dùng bấm vào.</li>
 </ul>
 <h2>3. Tab Dashboard</h2>
@@ -107,7 +107,7 @@ HELP_TEXT = """
 <ul style="list-style-type: none; padding-left: 20px; line-height: 1.5;">
     <li>-Dialog Help bao gồm:</li>
     <li>+ User manual: Phần hướng dẫn người dùng. </li>
-    <li>+ Change DICOMweb URL: Thay đổi đường dẫn đển trang Dicomweb Orthanc tùy vào setup của người dùng </li>
+    <li>+ Change DICOMweb URL: Thay đổi đường dẫn đển trang Dicom web Orthanc (dùng cho phần DICOM Bridge) tùy vào setup của người dùng. </li>
     <li>+ Change User password: Dùng để thay đổi password của User hiện tại (Lưu ý: không thể đổi trùng mật khẩu với mật khẩu cũ gần nhất.)</li>
     <li>+ Change cloud storage limit: Dùng để thay đổi limit của cloud, tuy nhiên cần có mật khẩu Admin để thực hiện. </li>
 

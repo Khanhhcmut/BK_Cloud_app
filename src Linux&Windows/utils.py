@@ -9,7 +9,7 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 def load_app_config():
-    default = {"enable_dicom_bridge": True}
+    default = {"enable_dicom_bridge": False}
     try:
         if os.path.exists("app_config.json"):
             with open("app_config.json", "r", encoding="utf-8") as f:

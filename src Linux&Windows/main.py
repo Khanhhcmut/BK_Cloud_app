@@ -2992,19 +2992,18 @@ class MainWindow(QWidget):
                 QMessageBox.warning(self, "No folder selected", "You haven't chosen a folder to back up")
                 return
 
-            # === 1. Tạo container "Backup" nếu chưa có
-            headers = {"X-Auth-Token": self.token}
-            backup_container = "Backup"
-            container_url = f"{self.storage_url}/{backup_container}"
-            response = requests.put(container_url, headers=headers)
-            if response.status_code not in [201, 202, 204]:  # 204 nếu đã tồn tại
-                raise Exception(f"Unable to create Backup container: HTTP {response.status_code}")
-
-            # === 2. Định dạng tên folder
+            # === 1. Định dạng tên folder backup
             now = datetime.now()
-            folder_name = f"NOW.{now.strftime('%d.%m.%Y.%H.%M.%S')}" if is_now else now.strftime('%d.%m.%Y.%H.%M.%S')
+            folder_name = (
+                f"NOW.{now.strftime('%d.%m.%Y.%H.%M.%S')}"
+                if is_now
+                else now.strftime('%d.%m.%Y.%H.%M.%S')
+            )
 
+            # === 2. Build danh sách file backup + tính tổng dung lượng
             file_tasks = []
+            total_backup_size = 0
+
             for folder_path in folders:
                 base_name = os.path.basename(folder_path)
                 for root, _, files in os.walk(folder_path):
@@ -3013,12 +3012,44 @@ class MainWindow(QWidget):
                         rel_path = os.path.relpath(full_path, folder_path).replace("\\", "/")
                         object_name = f"{folder_name}/{base_name}/{rel_path}"
                         file_tasks.append((full_path, object_name))
+                        try:
+                            total_backup_size += os.path.getsize(full_path)
+                        except OSError:
+                            pass
 
             if not file_tasks:
-                QMessageBox.information(self, "No data available", "The selected folders do not contain any files")
+                QMessageBox.information(
+                    self,
+                    "No data available",
+                    "The selected folders do not contain any files"
+                )
                 return
 
-            # === 3. Thực hiện upload (dùng lại UploadWorker)
+            # === 3. CẬP NHẬT DUNG LƯỢNG ĐÃ DÙNG ===
+            self.calculate_total_used_bytes()
+
+            # === 4. KIỂM TRA QUOTA ===
+            available_space = self.total_quota_bytes - self.used_bytes
+
+            if total_backup_size > available_space:
+                QMessageBox.critical(
+                    self,
+                    "Insufficient Storage",
+                    "Not enough storage to complete the backup.\n\n"
+                    f"Required: {self.format_size(total_backup_size)}\n"
+                    f"Available: {self.format_size(available_space)}"
+                )
+                return
+
+            # === 5. Tạo container Backup (chỉ khi đủ quota)
+            headers = {"X-Auth-Token": self.token}
+            backup_container = "Backup"
+            container_url = f"{self.storage_url}/{backup_container}"
+            response = requests.put(container_url, headers=headers)
+            if response.status_code not in (201, 202, 204):
+                raise Exception(f"Unable to create Backup container: HTTP {response.status_code}")
+
+            # === 6. Upload toàn bộ file
             self.completed_tasks = 0
             self.total_tasks = len(file_tasks)
             self.progress_bar.setValue(0)
@@ -3035,11 +3066,14 @@ class MainWindow(QWidget):
                 )
                 worker.signals.progress.connect(self.progress_bar.setValue)
                 worker.signals.done.connect(self.on_backup_task_done)
-                worker.signals.error.connect(lambda msg: QMessageBox.warning(self, "Backup Error", msg))
+                worker.signals.error.connect(
+                    lambda msg: QMessageBox.warning(self, "Backup Error", msg)
+                )
                 self.threadpool.start(worker)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Backup error: {str(e)}")
+
     # Thanh progress sau khi backup xong
     def on_backup_task_done(self):
         self.completed_tasks += 1
@@ -3047,9 +3081,21 @@ class MainWindow(QWidget):
         self.progress_bar.setValue(percent)
 
         if self.completed_tasks == self.total_tasks:
-            QMessageBox.information(self, "Backup successful", "Backup completed successfully.")
             self.progress_bar.setValue(100)
+
+            QTimer.singleShot(0, self.show_backup_success)
+
             QTimer.singleShot(1500, lambda: self.progress_bar.setValue(0))
+
+    def show_backup_success(self):
+        if not self.isVisible():
+            return
+
+        QMessageBox.information(
+            self,
+            "Backup successful",
+            "Backup completed successfully."
+        )
     # Chọn thư mục backup
     def choose_backup_folders(self):
         folders = []

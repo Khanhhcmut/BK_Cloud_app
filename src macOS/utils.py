@@ -22,7 +22,7 @@ def user_json_path(filename):
     return os.path.join(get_user_data_dir(), filename)
 
 def load_app_config():
-    default = {"enable_dicom_bridge": True}
+    default = {"enable_dicom_bridge": False}
     try:
         path = user_json_path("app_config.json")
         if os.path.exists(path):

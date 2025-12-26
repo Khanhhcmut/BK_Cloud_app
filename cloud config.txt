@@ -1,3 +1,5 @@
+==============(add this code to disable access to HORIZON throught web)========================
+
 sudo nano /etc/apache2/sites-enabled/horizon.conf
 
 <Location /dashboard>
@@ -6,5 +8,55 @@ sudo nano /etc/apache2/sites-enabled/horizon.conf
 
 sudo systemctl reload apache2
 
+==============(add this code create cloud backend using Devstack - local.conf file)============
 
-add this code to disable access to Horizon dashboard
+[[local|localrc]]
+
+# ===== Passwords =====
+ADMIN_PASSWORD=
+
+DATABASE_PASSWORD=
+RABBIT_PASSWORD=
+SERVICE_PASSWORD=
+
+# ===== Network =====
+HOST_IP=
+
+# ===== Disable ALL default services =====
+disable_all_services
+
+# ===== Core services =====
+enable_service mysql
+enable_service rabbit
+enable_service key
+enable_service memcached
+enable_service apache
+
+# ===== Swift services =====
+enable_service swift
+enable_service s-proxy
+enable_service s-object
+enable_service s-container
+enable_service s-account
+
+# ===== Horizon =====
+enable_service horizon
+
+# ===== Swift config =====
+SWIFT_HASH=devstackswift
+SWIFT_REPLICAS=1
+SWIFT_DATA_DIR=$DEST/data/swift
+
+==============(use this code to add more storage to SWIFT in VPS)==============================
+
+lsblk
+
+sudo losetup -l | grep loop4   (xem duong dan)
+
+sudo truncate -s 70G /opt/stack/data/swift/drives/images/swift.img
+
+sudo losetup -c /dev/loop4    (thay doi loop tuy vao setting)
+
+df -h /opt/stack/data/swift/drives/sdb1
+
+===============================================================================================

@@ -59,4 +59,21 @@ sudo losetup -c /dev/loop4    (thay doi loop tuy vao setting)
 
 df -h /opt/stack/data/swift/drives/sdb1
 
+==============(VM ware network setup)=========================================================
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    ens33:
+      dhcp4: false
+      addresses:
+        - 10.130.9.200/16
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4
+      routes:
+        - to: 0.0.0.0/0
+          via: 10.130.0.1
 ===============================================================================================
+
